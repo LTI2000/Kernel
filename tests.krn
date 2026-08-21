@@ -1,0 +1,88 @@
+; ---------------------------------------------------------------------------
+; Test suite.   Run with:  java Kernel.java tests.krn
+; ---------------------------------------------------------------------------
+
+($define! toplevel (get-current-environment))
+($define! passed 0) ($define! failed 0)
+($define! check
+  ($lambda (label actual expected)
+    ($if (equal? actual expected)
+         ($set! toplevel passed (+ passed 1))
+         ($sequence
+           ($set! toplevel failed (+ failed 1))
+           (display "FAIL ") (display label)
+           (display " got ") (write actual)
+           (display " want ") (write expected) (newline)))))
+
+(check "arith" (* 6 (+ 3 4)) 42)
+(check "bigint" (expt 2 100) 1267650600228229401496703205376)
+(check "div" (/ 10 5) 2)
+(check "real" (/ 1 4) 0.25)
+(check "cmp" (<? 1 2 3) #t)
+(check "lambda" (($lambda (x y) (- x y)) 10 3) 7)
+(check "variadic" (($lambda args args) 1 2 3) (list 1 2 3))
+(check "dotted" (($lambda (a . rest) rest) 1 2 3) (list 2 3))
+(check "let" ($let ((a 1) (b 2)) (+ a b)) 3)
+(check "let*" ($let* ((a 1) (b (+ a 1))) (* a b)) 2)
+(check "letrec" ($letrec ((ev? ($lambda (n) ($if (zero? n) #t (od? (- n 1)))))
+                          (od? ($lambda (n) ($if (zero? n) #f (ev? (- n 1))))))
+                  (ev? 10)) #t)
+(check "cond" ($cond (#f 1) ((=? 1 1) 2) (#t 3)) 2)
+(check "and-short" ($and? #f (error "boom")) #f)
+(check "or-short" ($or? #t (error "boom")) #t)
+(check "map" (map ($lambda (x) (* x x)) (list 1 2 3)) (list 1 4 9))
+(check "map2" (map + (list 1 2) (list 10 20)) (list 11 22))
+(check "filter" (filter even? (list 1 2 3 4)) (list 2 4))
+(check "reduce" (reduce (list 1 2 3 4) + 0) 10)
+(check "append" (append (list 1) (list 2 3) ()) (list 1 2 3))
+(check "assoc" (assoc 2 (list (list 1 "a") (list 2 "b"))) (list 2 "b"))
+(check "cadr" (cadr (list 1 2 3)) 2)
+(check "apply" (apply + (list 1 2 3)) 6)
+
+; fexprs
+($define! $my-if ($vau (c t f) e ($if (eval c e) (eval t e) (eval f e))))
+(check "own-if" ($my-if (<? 1 2) ($quote yes) (error "not evaluated")) ($quote yes))
+($define! $swap! ($vau (a b) e
+  ($let ((av (eval a e)) (bv (eval b e)))
+    (eval (list $define! a (list $quote bv)) e)
+    (eval (list $define! b (list $quote av)) e))))
+($define! x 1) ($define! y 2) ($swap! x y)
+(check "swap" (list x y) (list 2 1))
+(check "unwrap" ((unwrap +) 1 2) 3)
+(check "wrap-op" ((wrap $quote) (+ 1 2)) 3)
+(check "vau-operands" (($vau operands #ignore operands) a (b c)) (list ($quote a) (list ($quote b) ($quote c))))
+
+; environments
+($define! sandbox (make-environment))
+(eval (list $define! ($quote z) 99) sandbox)
+(check "remote" (eval ($quote z) sandbox) 99)
+(check "binds" ($binds? sandbox z) #t)
+(check "binds-not" ($binds? sandbox nope) #f)
+
+; promises
+($define! counter 0)
+($define! p ($lazy ($sequence ($set! (get-current-environment) counter (+ counter 1)) counter)))
+(force p) (force p)
+(check "lazy-memo" (force p) 1)
+
+; encapsulation
+($define! box (make-encapsulation-type))
+($define! wrap-box (car box))
+($define! box? (cadr box))
+($define! unbox (caddr box))
+(check "encap" (unbox (wrap-box 5)) 5)
+(check "encap?" (box? (wrap-box 5)) #t)
+(check "encap-no" (box? 5) #f)
+
+; escape continuations
+(check "callcc" (call/cc ($lambda (k) (+ 1 (k 41)))) 41)
+(check "callcc-normal" (call/cc ($lambda (k) 7)) 7)
+
+; tail calls: 1 million deep
+($define! loop ($lambda (n acc) ($if (zero? n) acc (loop (- n 1) (+ acc 1)))))
+(check "tco" (loop 1000000 0) 1000000)
+($define! count-cond ($lambda (n) ($cond ((zero? n) 0) (#t (count-cond (- n 1))))))
+(check "tco-cond" (count-cond 200000) 0)
+
+(display "passed: ") (display passed)
+(display "  failed: ") (display failed) (newline)

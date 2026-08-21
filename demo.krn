@@ -1,0 +1,112 @@
+; ---------------------------------------------------------------------------
+; A tour of Kernel.   Run with:  java Kernel.java demo.krn
+; ---------------------------------------------------------------------------
+
+($define! show
+  ($vau (expr) env
+    (write expr)
+    (display "  ==>  ")
+    (write (eval expr env))
+    (newline)))
+
+(display "-- 1. the usual suspects") (newline)
+(show (* 6 (+ 3 4)))
+(show (expt 2 128))
+(show (map ($lambda (x) (* x x)) (list 1 2 3 4)))
+(show ($let* ((x 2) (y (* x 10))) (list x y)))
+
+(display "
+-- 2. operatives: the whole point") (newline)
+; $vau builds an operative: operands arrive UNEVALUATED, together with the
+; caller's environment. No macro expander, no quoting, no phase distinction.
+($define! $my-if
+  ($vau (test consequent alternative) env
+    ($if (eval test env)
+         (eval consequent env)
+         (eval alternative env))))
+(show ($my-if (<? 1 2) ($quote yes) (error "never evaluated")))
+
+; A combiner that reports the source text it was handed.
+($define! $source ($vau operands #ignore operands))
+(show ($source (a b) c "d"))
+
+; ...and a debugging operative you simply cannot write as a function.
+($define! $trace
+  ($vau (expr) env
+    ($let ((value (eval expr env)))
+      (display "  trace: ") (write expr)
+      (display " = ") (write value) (newline)
+      value)))
+(show (+ 1 ($trace (* 3 4))))
+
+(display "
+-- 3. $lambda is not primitive") (newline)
+; It is derived, in the prelude, in three lines:
+;   ($define! $lambda
+;     ($vau (formals . body) env
+;       (wrap (eval (cons $vau (cons formals (cons #ignore body))) env))))
+; `wrap` is what makes a combiner evaluate its operands; `unwrap` undoes it.
+(show (applicative? car))
+(show (operative? (unwrap car)))
+(show ((unwrap car) (list 1 2)))          ; operand list not evaluated again
+(show (map (wrap $quote) (list 1 2 3)))   ; an operative, made applicative
+
+(display "
+-- 4. environments are values") (newline)
+($define! sandbox (make-kernel-standard-environment))
+(eval (list $define! ($quote greeting) "hello from the sandbox") sandbox)
+(show (eval ($quote greeting) sandbox))
+(show ($binds? sandbox greeting))
+(show ($binds? (get-current-environment) greeting))
+
+; Closures with mutable state, using $set! on a captured environment.
+($define! make-counter
+  ($lambda ()
+    ($let ((n 0))
+      ($define! home (get-current-environment))
+      ($lambda () ($set! home n (+ n 1)) n))))
+($define! tick (make-counter))
+(tick) (tick)
+(show (tick))
+
+(display "
+-- 5. lazy streams from $lazy / force") (newline)
+($define! $stream-cons ($vau (head tail) env (cons (eval head env) ($lazy (eval tail env)))))
+($define! stream-head car)
+($define! stream-tail ($lambda (s) (force (cdr s))))
+($define! integers-from ($lambda (n) ($stream-cons n (integers-from (+ n 1)))))
+($define! stream-take
+  ($lambda (s n)
+    ($if (zero? n) () (cons (stream-head s) (stream-take (stream-tail s) (- n 1))))))
+(show (stream-take (integers-from 1) 10))
+
+(display "
+-- 6. encapsulated (opaque) types") (newline)
+($define! account-type (make-encapsulation-type))
+($define! make-account (car account-type))
+($define! account? (cadr account-type))
+($define! balance (caddr account-type))
+($define! acct (make-account 250))
+(show (account? acct))
+(show (account? 250))
+(show (balance acct))
+(show acct)
+
+(display "
+-- 7. escape continuations") (newline)
+($define! find-first
+  ($lambda (accept? items)
+    (call/cc
+      ($lambda (return)
+        (for-each ($lambda (x) ($when (accept? x) (return x))) items)
+        #f))))
+(show (find-first ($lambda (n) (>? n 10)) (list 3 7 42 99)))
+(show (find-first ($lambda (n) (>? n 1000)) (list 3 7 42 99)))
+
+(display "
+-- 8. proper tail calls, guaranteed") (newline)
+($define! count-down
+  ($lambda (n acc)
+    ($cond ((zero? n) acc)
+           (#t (count-down (- n 1) (+ acc 1))))))
+(show (count-down 1000000 0))
