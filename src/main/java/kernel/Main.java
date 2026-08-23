@@ -1,11 +1,11 @@
 package kernel;
 
 import kernel.builtins.Ground;
-import kernel.model.Const;
 import kernel.model.ContinuationInvoked;
-import kernel.model.Env;
 import kernel.model.KernelError;
 import kernel.model.Obj;
+import kernel.model.Obj.Const;
+import kernel.model.Obj.Env;
 import kernel.printer.Printer;
 import kernel.repl.Repl;
 

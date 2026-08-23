@@ -1,13 +1,13 @@
 package kernel.reader;
 
-import kernel.model.Ch;
-import kernel.model.Const;
-import kernel.model.Int;
 import kernel.model.KernelError;
 import kernel.model.Obj;
-import kernel.model.Real;
-import kernel.model.Str;
-import kernel.model.Sym;
+import kernel.model.Obj.Ch;
+import kernel.model.Obj.Const;
+import kernel.model.Obj.Int;
+import kernel.model.Obj.Real;
+import kernel.model.Obj.Str;
+import kernel.model.Obj.Sym;
 
 import java.io.Closeable;
 import java.io.IOException;

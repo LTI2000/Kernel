@@ -1,9 +1,9 @@
 package kernel.builtins;
 
-import kernel.model.Int;
 import kernel.model.KernelError;
 import kernel.model.Obj;
-import kernel.model.Real;
+import kernel.model.Obj.Int;
+import kernel.model.Obj.Real;
 import kernel.printer.Printer;
 
 import java.math.BigInteger;

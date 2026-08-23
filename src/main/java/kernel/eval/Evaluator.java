@@ -1,16 +1,16 @@
 package kernel.eval;
 
-import kernel.model.Applicative;
-import kernel.model.Combiner;
-import kernel.model.Const;
-import kernel.model.Env;
 import kernel.model.KernelError;
 import kernel.model.Obj;
-import kernel.model.Pair;
-import kernel.model.Prim;
-import kernel.model.Sym;
-import kernel.model.TailCall;
-import kernel.model.Vau;
+import kernel.model.Obj.Combiner;
+import kernel.model.Obj.Combiner.Applicative;
+import kernel.model.Obj.Combiner.Operative.Prim;
+import kernel.model.Obj.Combiner.Operative.Vau;
+import kernel.model.Obj.Const;
+import kernel.model.Obj.Env;
+import kernel.model.Obj.Pair;
+import kernel.model.Obj.Sym;
+import kernel.model.Obj.TailCall;
 import kernel.printer.Printer;
 import kernel.reader.Reader;
 

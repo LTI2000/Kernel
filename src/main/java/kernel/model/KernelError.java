@@ -1,5 +1,7 @@
 package kernel.model;
 
+import kernel.model.Obj.Str;
+
 public final class KernelError extends RuntimeException {
     public final Obj payload;
     public KernelError(String message) { this(message, null); }

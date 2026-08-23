@@ -1,7 +1,7 @@
 package kernel;
 
 import kernel.builtins.Ground;
-import kernel.model.Env;
+import kernel.model.Obj.Env;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
