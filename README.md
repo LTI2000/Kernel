@@ -1,82 +1,81 @@
-# Kernel-Interpreter in Java
+# Kernel Interpreter in Java
 
-Ein Interpreter für **Kernel** (John Shutts Scheme-Dialekt, R⁻¹RK), aufgeteilt in
-ein kleines Paket-Geflecht. Statt Makros und Spezialformen gibt es nur zwei
-Bausteine: Operative (`$vau`, bekommen ihre Operanden **unausgewertet** plus die
-Aufruf-Umgebung) und Applicative (`wrap` – werten die Operanden aus). Umgebungen
-sind first-class Werte.
+An interpreter for **Kernel** (John Shutt's Scheme dialect, R⁻¹RK), split into
+a small package weave. Instead of macros and special forms there are only two
+building blocks: operatives (`$vau`, receive their operands **unevaluated**
+plus the calling environment) and applicatives (`wrap` – evaluate their
+operands). Environments are first-class values.
 
-## Voraussetzungen
+## Prerequisites
 
-JDK 21 oder neuer, Maven 3.9 oder neuer.
+JDK 21 or newer, Maven 3.9 or newer.
 
-## Bauen und starten
+## Building and running
 
 ```bash
-mvn package                                                        # baut target/kernel-interpreter-1.0-SNAPSHOT.jar
+mvn package                                                        # builds target/kernel-interpreter-1.0-SNAPSHOT.jar
 java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar                               # REPL
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn    # Datei ausführen
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/test/resources/tests.krn   # Testsuite (38 Checks)
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)'                   # einzelner Ausdruck
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn -i # Datei laden, dann REPL
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn    # run a file
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/test/resources/tests.krn   # test suite (38 checks)
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)'                   # single expression
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn -i # load a file, then REPL
 
-mvn test                                                           # führt tests.krn als JUnit-Test aus
-mvn exec:java -Dexec.args="src/main/resources/demo.krn"            # ohne vorheriges Package bauen
+mvn test                                                           # runs tests.krn as a JUnit test
+mvn exec:java -Dexec.args="src/main/resources/demo.krn"            # without building a package first
 ```
 
-## Dateien
+## Files
 
-| Datei | Inhalt |
+| File | Contents |
 |---|---|
-| `pom.xml` | Maven-Projektdefinition (Build, Tests, ausführbares Jar) |
-| `src/main/java/kernel/Main.java` | Einstiegspunkt: CLI-Argumente, verkabelt Ground-Umgebung und REPL |
-| `src/main/java/kernel/model/` | Objektmodell (`Obj`-Hierarchie: `Sym`, `Pair`, `Env`, `Vau`, …), `Values`-Hilfsfunktionen |
-| `src/main/java/kernel/reader/` | `Reader` – parst Kernel-Quelltext zu `Obj`-Daten |
-| `src/main/java/kernel/printer/` | `Printer` – rendert `Obj`-Daten zurück zu Text (`write`/`display`) |
-| `src/main/java/kernel/eval/` | `Evaluator` – die Trampolin-Auswertungsschleife |
-| `src/main/java/kernel/builtins/` | `Ground` (Standardumgebung), `Numbers`, `Prelude` (in Kernel selbst geschriebene Operative) |
-| `src/main/java/kernel/repl/` | `Repl` – die interaktive Read-Eval-Print-Loop |
-| `src/test/java/kernel/KernelTest.java` | JUnit-Test, der `tests.krn` ausführt und auf `failed: 0` prüft |
-| `src/main/resources/demo.krn` | Rundgang durch die Sprache (Fexprs, Umgebungen, Streams, Continuations) |
-| `src/test/resources/tests.krn` | Testsuite, gibt `passed: … failed: …` aus |
+| `pom.xml` | Maven project definition (build, tests, runnable jar) |
+| `src/main/java/kernel/Main.java` | Entry point: CLI arguments, wires up the ground environment and REPL |
+| `src/main/java/kernel/model/` | Object model (`Obj` hierarchy: `Sym`, `Pair`, `Env`, `Vau`, …), `Values` helper functions |
+| `src/main/java/kernel/reader/` | `Reader` – parses Kernel source text into `Obj` data |
+| `src/main/java/kernel/printer/` | `Printer` – renders `Obj` data back to text (`write`/`display`) |
+| `src/main/java/kernel/eval/` | `Evaluator` – the trampolined evaluation loop |
+| `src/main/java/kernel/builtins/` | `Ground` (standard environment), `Numbers`, `Prelude` (operatives written in Kernel itself) |
+| `src/main/java/kernel/repl/` | `Repl` – the interactive read-eval-print loop |
+| `src/test/java/kernel/KernelTest.java` | JUnit test that runs `tests.krn` and checks for `failed: 0` |
+| `src/main/resources/demo.krn` | A tour of the language (fexprs, environments, streams, continuations) |
+| `src/test/resources/tests.krn` | Test suite, prints `passed: … failed: …` |
 
-## Aufbau
+## Design
 
-- **Paketstruktur** – `kernel.model` (Werte), `kernel.reader`, `kernel.printer`,
-  `kernel.eval` (Auswertungsschleife) und `kernel.builtins` (Standardumgebung samt
-  Prelude) sind sauber getrennt; `kernel.repl` und `kernel.Main` bilden die
-  Außenseite. Die Trennung folgt den Phasen eines Interpreters: lesen, auswerten,
-  drucken, plus die Werte, mit denen sie alle arbeiten.
-- **Objektmodell** (`kernel.model`) – ein `sealed interface Obj`; Records für die
-  unveränderlichen Atome, finale Klassen für `Pair`, `Env`, `Vau`. Evaluator und
-  Printer arbeiten mit Pattern Matching darüber.
-- **Echte Tail Calls** – `Evaluator.eval` ist eine einzige Schleife. Primitive, die
-  in Tail-Position aufrufen (`$if`, `$sequence`, `eval`, `apply`), liefern ein
-  `TailCall`-Token zurück, statt sich rekursiv aufzurufen. `(count-down 1000000 0)`
-  läuft mit konstantem Stack.
-- **Kleiner Java-Kern** – nur `$vau`, `wrap`/`unwrap`, `$define!`, `$if`, `eval` usw.
-  sind in Java (`kernel.builtins.Ground`). `$lambda`, `$let`, `$let*`, `$letrec`,
-  `$cond`, `$and?`, `$set!` werden im `Prelude`-Textblock in Kernel selbst
-  abgeleitet.
-- Nicht-tail-rekursive Aufrufe verbrauchen JVM-Stack, deshalb läuft `main` in einem
-  Thread mit 64 MB Stack; Erschöpfung wird als Fehlermeldung gemeldet, nicht als
-  Stacktrace.
+- **Package structure** – `kernel.model` (values), `kernel.reader`, `kernel.printer`,
+  `kernel.eval` (evaluation loop) and `kernel.builtins` (standard environment plus
+  prelude) are cleanly separated; `kernel.repl` and `kernel.Main` form the outer
+  layer. The split follows the phases of an interpreter: read, evaluate, print,
+  plus the values they all operate on.
+- **Object model** (`kernel.model`) – a `sealed interface Obj`; records for the
+  immutable atoms, final classes for `Pair`, `Env`, `Vau`. The evaluator and
+  printer work over it with pattern matching.
+- **Real tail calls** – `Evaluator.eval` is a single loop. Primitives that call
+  in tail position (`$if`, `$sequence`, `eval`, `apply`) return a `TailCall`
+  token instead of recursing. `(count-down 1000000 0)` runs with constant stack.
+- **Small Java core** – only `$vau`, `wrap`/`unwrap`, `$define!`, `$if`, `eval`
+  and so on are in Java (`kernel.builtins.Ground`). `$lambda`, `$let`, `$let*`,
+  `$letrec`, `$cond`, `$and?`, `$set!` are derived in the `Prelude` text block
+  in Kernel itself.
+- Non-tail-recursive calls consume JVM stack, so `main` runs in a thread with a
+  64 MB stack; exhaustion is reported as an error message, not a stack trace.
 
-## Umfang
+## Scope
 
-Booleans, Äquivalenz (`eq?`, `equal?`), Symbole, Paare und Listen (inkl. `caar`…`cddddr`,
-`map`, `filter`, `reduce`, `assoc`), Kombinatoren (`$vau`, `wrap`, `unwrap`, `apply`),
-Umgebungen (`make-environment`, `$binds?`, `get-current-environment`,
-`make-kernel-standard-environment`), Zahlen (BigInteger + Gleitkomma), Strings, Zeichen,
-I/O, Promises (`$lazy`, `force`, `memoize`), Encapsulations
+Booleans, equivalence (`eq?`, `equal?`), symbols, pairs and lists (incl. `caar`…`cddddr`,
+`map`, `filter`, `reduce`, `assoc`), combiners (`$vau`, `wrap`, `unwrap`, `apply`),
+environments (`make-environment`, `$binds?`, `get-current-environment`,
+`make-kernel-standard-environment`), numbers (BigInteger + floating point), strings,
+characters, I/O, promises (`$lazy`, `force`, `memoize`), encapsulations
 (`make-encapsulation-type`), `call/cc`.
 
-## Abweichungen vom Report
+## Deviations from the report
 
-- Continuations nur als **Escape** (exception-basiert): kein Wiedereintritt, kein
+- Continuations are **escape-only** (exception-based): no re-entry, no
   `guard-dynamic-extent`.
-- Keine exakten Rationalzahlen – `/` liefert bei nicht aufgehender Division ein
-  Inexact-Ergebnis.
-- Zyklische Listen werden erkannt und abgelehnt statt via `get-list-metrics` vermessen.
-- `$quote` ist als Bequemlichkeit enthalten (`'x` → `($quote x)`), obwohl Shutt es
-  bewusst weglässt.
+- No exact rationals – `/` yields an inexact result when division doesn't
+  come out even.
+- Cyclic lists are detected and rejected instead of measured via
+  `get-list-metrics`.
+- `$quote` is included as a convenience (`'x` → `($quote x)`), even though
+  Shutt deliberately leaves it out.
