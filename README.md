@@ -6,6 +6,10 @@ building blocks: operatives (`$vau`, receive their operands **unevaluated**
 plus the calling environment) and applicatives (`wrap` – evaluate their
 operands). Environments are first-class values.
 
+See [SYNTAX.md](SYNTAX.md) for the full language reference: lexical syntax,
+data types, the evaluation rule, parameter-tree binding, and every special
+form and built-in.
+
 ## Prerequisites
 
 JDK 21 or newer, Maven 3.9 or newer.
@@ -28,6 +32,7 @@ mvn exec:java -Dexec.args="src/main/resources/demo.krn"            # without bui
 
 | File | Contents |
 |---|---|
+| `SYNTAX.md` | Language reference: lexical syntax, data types, evaluation rule, special forms |
 | `pom.xml` | Maven project definition (build, tests, runnable jar) |
 | `src/main/java/kernel/Main.java` | Entry point: CLI arguments, wires up the ground environment and REPL |
 | `src/main/java/kernel/model/` | Object model (`Obj` hierarchy: `Sym`, `Pair`, `Env`, `Vau`, …), `Values` helper functions |
