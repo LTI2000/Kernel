@@ -13,15 +13,15 @@ JDK 21 oder neuer, Maven 3.9 oder neuer.
 ## Bauen und starten
 
 ```bash
-mvn package                                          # baut target/kernel-interpreter-1.0-SNAPSHOT.jar
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar                 # REPL
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar demo.krn        # Datei ausführen
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar tests.krn       # Testsuite (38 Checks)
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)'    # einzelner Ausdruck
-java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar demo.krn -i     # Datei laden, dann REPL
+mvn package                                                        # baut target/kernel-interpreter-1.0-SNAPSHOT.jar
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar                               # REPL
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn    # Datei ausführen
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/test/resources/tests.krn   # Testsuite (38 Checks)
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)'                   # einzelner Ausdruck
+java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn -i # Datei laden, dann REPL
 
-mvn test                                              # führt tests.krn als JUnit-Test aus
-mvn exec:java -Dexec.args="demo.krn"                  # ohne vorheriges Package bauen
+mvn test                                                           # führt tests.krn als JUnit-Test aus
+mvn exec:java -Dexec.args="src/main/resources/demo.krn"            # ohne vorheriges Package bauen
 ```
 
 ## Dateien
@@ -37,8 +37,8 @@ mvn exec:java -Dexec.args="demo.krn"                  # ohne vorheriges Package 
 | `src/main/java/kernel/builtins/` | `Ground` (Standardumgebung), `Numbers`, `Prelude` (in Kernel selbst geschriebene Operative) |
 | `src/main/java/kernel/repl/` | `Repl` – die interaktive Read-Eval-Print-Loop |
 | `src/test/java/kernel/KernelTest.java` | JUnit-Test, der `tests.krn` ausführt und auf `failed: 0` prüft |
-| `demo.krn` | Rundgang durch die Sprache (Fexprs, Umgebungen, Streams, Continuations) |
-| `tests.krn` | Testsuite, gibt `passed: … failed: …` aus |
+| `src/main/resources/demo.krn` | Rundgang durch die Sprache (Fexprs, Umgebungen, Streams, Continuations) |
+| `src/test/resources/tests.krn` | Testsuite, gibt `passed: … failed: …` aus |
 
 ## Aufbau
 

@@ -27,7 +27,7 @@ class KernelTest {
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
         System.setOut(new PrintStream(captured, true, StandardCharsets.UTF_8));
         try {
-            loadFile("tests.krn", env);
+            loadFile("src/test/resources/tests.krn", env);
         } finally {
             System.setOut(originalOut);
         }

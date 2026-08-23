@@ -19,9 +19,9 @@ import static kernel.eval.Evaluator.loadFile;
  *
  * <p>Run it:
  * <pre>
- *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar              # REPL
- *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar demo.krn     # run a file
- *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)' # evaluate one expression
+ *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar                                    # REPL
+ *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn        # run a file
+ *   java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar -e '(+ 1 2)'                        # evaluate one expression
  * </pre>
  *
  * <p>The interpreter itself is spread across a handful of packages:

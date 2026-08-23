@@ -1,5 +1,6 @@
 ; ---------------------------------------------------------------------------
-; Test suite.   Run with:  java Kernel.java tests.krn
+; Test suite.   Run with:  java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/test/resources/tests.krn
+; (or:  mvn test  --  KernelTest.java runs this file and asserts a clean run)
 ; ---------------------------------------------------------------------------
 
 ($define! toplevel (get-current-environment))

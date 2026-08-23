@@ -1,5 +1,5 @@
 ; ---------------------------------------------------------------------------
-; A tour of Kernel.   Run with:  java Kernel.java demo.krn
+; A tour of Kernel.   Run with:  java -jar target/kernel-interpreter-1.0-SNAPSHOT.jar src/main/resources/demo.krn
 ; ---------------------------------------------------------------------------
 
 ($define! show

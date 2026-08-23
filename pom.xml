@@ -61,7 +61,7 @@
         </configuration>
       </plugin>
 
-      <!-- Lets `mvn exec:java -Dexec.args="demo.krn"` mirror the old
+      <!-- Lets `mvn exec:java -Dexec.args="src/main/resources/demo.krn"` mirror the old
            `java Kernel.java demo.krn` workflow during development. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
